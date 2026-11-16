@@ -1,8 +1,12 @@
+# Optimized by ci-cost (https://github.com/mariotavarez/ci-cost)
+# Applied 2 optimizations:
+# - [HIGH] Add npm dependency cache to "build-openssl" job
+# - [MEDIUM] Use "npm ci" instead of "npm install" in "build-openssl"
+# Estimated savings: ~5 min/run
+#
 name: Build and Publish OpenSSL Packages
-
-on:
-  workflow_dispatch:
-
+'on':
+  workflow_dispatch: null
 jobs:
   build-openssl:
     name: Build OpenSSL package for (${{ matrix.os }} ${{ matrix.arch }})
@@ -19,26 +23,22 @@ jobs:
           - os: macos-15-intel
             arch: x64
       fail-fast: false
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
-
+          cache: npm
       - name: Install dependencies
         run: npm install
-
       - name: Build OpenSSL packages
         env:
           npm_config_arch: ${{ matrix.arch }}
           NODEGIT_OPENSSL_BUILD_PACKAGE: 1
-          OPENSSL_MACOS_DEPLOYMENT_TARGET: "11.0"
+          OPENSSL_MACOS_DEPLOYMENT_TARGET: '11.0'
         run: node utils/acquireOpenSSL.mjs
-
       - name: Push OpenSSL package to S3
         env:
           npm_config_arch: ${{ matrix.arch }}
